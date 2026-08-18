@@ -14,8 +14,8 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 2. `NOW`：平台原生 `case-init` 落地当前分析项目的 `work/<case>/scope.md`（Windows `scripts/case-init.ps1`；Linux/macOS/Kali `scripts/case-init.sh`；契约见 `ops/scope-contract.md`）；**auth 未 granted 禁止对目标 ACT**。本地离线样本使用 `offline-sample` preset + explicit sample；Force 不得绕过硬门。
 3. `NOW`：按 `ops/role-map.md` 标 lead/specialist；立即打开 PRIMARY `SKILL.md` 执行 ACTION REQUIRED。
 4. `NEXT`：涉及本机工具时读 `tool-index.md`；**禁止猜路径**；缺工具 → 平台原生 bootstrap（仅 manifest）。
-5. `ACT`：执行并 **追加 timeline / 更新 workitems**；结论用 Evidence→Finding→Path（`ops/evidence-finding-path.md`）。
-6. 结束：`docs-generator` 报告 + 脱敏 `field-journal`；阶段菜单 3–6 项。
+5. `ACT`：执行并按任务规模维护 timeline/workitems；原始输出先作为 artifact，只有 decision-relevant observation 才升为 Evidence→Finding→Path（`ops/evidence-finding-path.md`）。
+6. `FINISH`：按 `ops/convergence-delivery.md` 选择最轻且满足用户交付要求的 `inline` / `case` / `formal` profile；报告、图表、journal、references、index mutation 均按该契约条件触发。
 
 **身份**：见 `ops/IDENTITY.md`（轻量路由包 + 工具自举 + journal；**不是** Z3r0 式平台）。
 
@@ -38,7 +38,7 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 | **前端 JS 逆向** | `js-reverse/` | 浏览器端签名定位、加密参数分析、运行时采样、Node 补环境复现；优先用现有 `js-reverse_*`，需要更强的浏览器/CDP/Hook 面时接入 jshookmcp，但前提是先把该 MCP server 下载/注册并启用 |
 | **radare2 分析** | `radare2/` | CLI 二进制侦察、反汇编、patch：r2 / rabin2 / rasm2 / radiff2 |
 | **CTF 竞赛全栈** | `../CTF-Sandbox-Orchestrator/` | 40+ 子技能：Web/逆向/Pwn/云/容器/AD/取证/隐写/移动端/密码学/ZIP，由总控统一编排 |
-| **技术文档编写** | `docs-generator/` | 任务完成后自动生成逆向报告、渗透报告、CTF writeup、签名逆向报告 |
+| **技术文档编写** | `docs-generator/` | 用户要求正式文档、formal handoff/archive，或其他明确文档交付时生成逆向报告、渗透报告、CTF writeup、签名逆向报告 |
 | **Evidence 图审查** | `case-review/` | 校验 scope、Evidence→Finding→Path 可追溯性、workitems、timeline 与 artifact hash |
 | **浏览器与桌面自动化** | `browser-automation/` | 浏览器操作（Playwright）+ Windows 桌面应用操作（OpenReverse UIA/CUA）+ 网络观察 |
 | **跨版本符号迁移** | `binary-diff/` | 有旧版符号迁移到新版、缺 PDB 推导、程序更新后批量迁移函数名 |
@@ -55,7 +55,7 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 | **移动逆向工程** | `mobile-reverse/` | Android + iOS：Frida/Objection 动态插桩、SSL Pinning/Root/越狱检测绕过、OWASP MASTG |
 | **恶意软件分析** | `malware-analysis/` | 样本分析六阶段、YARA/Sigma、反分析检测、沙箱编排 |
 | **DSL 虚拟机逆向** | `reverse-engineering/dsl-vm-reverse/` | JS 自定义指令集 VM（IIFE + switch-case opcode）；风控/验证码引擎等 |
-| **作战契约 ops** | `ops/` | Scope / 证据链 / 角色 / 时间线 / 身份 / skill 供应链安全 |
+| **作战契约 ops** | `ops/` | Scope / 证据链 / 角色 / 时间线 / 身份 / skill 供应链安全 / convergence delivery |
 | **社区 skill 对照** | `references/community-security-skills.md` | 外部安全 skill 索引与借鉴规则（禁止盲装） |
 | **Skill 供应链** | `ops/skill-supply-chain.md` | 外部 skill/MCP 安装门闩（AST10 精简） |
 | **RE 阶段门闩** | `reverse-engineering/references/re-agent-workflow.md` | triage→static→dynamic→synthesis |
@@ -97,28 +97,35 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 3. **深入分析** → 如果需要反编译→IDA；需要动态 Hook→Frida；需要符号执行→angr
 4. **一条路走不通就换一条** → 静态分析不行就动态，Java 层不行就看 so，页面观察不够就断点
 
-## 下一步菜单模式（Next-Step Menu Pattern）
+## 下一步菜单模式（Decision-Boundary Menu Pattern）
 
-每个子 skill 在执行完一个阶段后，`MUST` 提供给用户 3-6 个编号的下步选项，让用户选择方向。不要在无用户选择的情况下跨阶段推进。
+不要在每个阶段结束时机械暂停。已经授权且技术路径明确时，Agent `MUST` 自行继续到下一个合理阶段，并持续汇报进度。
 
-格式要求：
+只有出现真正的 decision boundary 时才 `MUST` 提供 3–6 个编号选项让用户选择。decision boundary 包括：
+
+- 需要用户偏好才能继续；
+- 即将扩大 scope；
+- 操作为破坏性、高成本或 materially risky；
+- 两条以上互斥路径同样合理；
+- 技术 objective 已满足，只剩可选 follow-up。
+
+菜单格式要求：
 - 每个选项以数字编号（1-6 范围）
-- 每个选项描述一项具体可执行的动作（不是抽象方向）
-- 至少包含一个"导出报告/写 writeup"选项
-- 至少包含一个"继续深入分析"或"换一种方法"选项
-- 必要时包含一个"停止/暂停/询问其他问题"出口
+- 每个选项描述一项具体可执行动作
+- 只在 relevant 時提供“导出报告/写 writeup”；不要为了凑菜单自动升级 formal delivery
+- 必要时包含停止/暂停出口
 
 示例：
-```
+```text
 ## 建议下一步（选一个编号）
 
-1. 对 sub_140001000 做深度反编译，还原算法
-2. 用 Frida 动态 Hook 验证参数猜想
-3. 导出当前已命名函数，生成符号迁移 YAML
-4. 生成当前阶段的分析报告
-5. 换 radare2 做轻量侦察对比
-6. 暂停，我先确认前面的证据
+1. 扩大 scope 到第二个样本并做交叉验证
+2. 保持当前 scope，输出已验证结论
+3. 生成 formal handoff report
+4. 暂停，我先确认前面的证据
 ```
+
+完整判定见 `ops/convergence-delivery.md`。
 
 ## 目录是动态扩充的
 
@@ -175,7 +182,14 @@ bash <package-root>/kali/scripts/bootstrap-reverse.sh 工具名 --start-services
 
 ## 自动进化
 
-每次完成逆向/渗透任务后，必须回写经验到 `field-journal/` 目录。详见 `RULES.md` 的"任务完成后的硬性 Checklist"。
+`field-journal` 是可复用经验库，不是每个任务的完成日志。只在任务产生以下任一新知识时回写：
+
+- 可复用的新技术/方法；
+- 新 failure mode 或工具兼容性事实；
+- 既有 precedent 被证明不适用并得到可泛化修正；
+- 值得跨任务复用的 lesson。
+
+正常复用既有方法并成功，不需要为了“完成任务”制造 journal/index 变更。详见 `ops/convergence-delivery.md`。
 
 - 模板：`field-journal/_template.md`
 - 索引：`field-journal/_index.md`
@@ -188,3 +202,5 @@ bash <package-root>/kali/scripts/bootstrap-reverse.sh 工具名 --start-services
 - [ ] 我是否在路由成功后读取了目标 skill 的 SKILL.md？
 - [ ] 路由未命中时，我是否提议了新增 skill 而非强行匹配？
 - [ ] 我是否基于 `tool-index` 使用了真实工具路径？
+- [ ] 我是否以 `decision_delta` 而非 Evidence 数量判断进度？
+- [ ] 我是否选择了满足用户要求的最轻 delivery profile，并只完成该 profile 真正需要的交付？
