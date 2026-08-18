@@ -1,7 +1,7 @@
 # Analysis Decision Framework (Issue #77)
 
 > **SSoT role**: Decision-quality / evidence-sufficiency / agent-bias cookbook for reverse-skill agents.
-> **Not** a second master analysis workflow. Obey `re-agent-workflow.md`, feasibility gate (#73), IAT iron rule (#72), A-T / U-AV cookbooks, and `evidence-finding-path.md` first.
+> **Not** a second master analysis workflow. Obey `re-agent-workflow.md`, feasibility gate (#73), IAT iron rule (#72), A-T / U-AV cookbooks, `evidence-finding-path.md`, and `convergence-delivery.md` first.
 > Rule IDs **R1-R51** keep the reporter numbering (**no R15**; includes **R50/R51**). Do not renumber.
 
 ## 0. How to use
@@ -9,7 +9,7 @@
 | When | Action |
 |------|--------|
 | Finding promotion / Synthesis | **P0** (R4*, R1, R2, R41) |
-| Stage change or stuck loop | R2, R31, R43 |
+| Stage change or stuck loop | R2, R31, R43 + `convergence-delivery.md` decision_delta |
 | Multi-module / anti-analysis | R50, R51 -> anti-analysis + A-T |
 | Already covered by ops/CI/skills | **P2** pointer only |
 
@@ -77,7 +77,9 @@ Claims MUST map Finding -> Evidence; else `ungrounded`.
 
 ### R43 — Plan deadlock -> replan
 
-3 actions with no new Evidence, or 2 stage switches without Evidence -> replan under **feasibility gate**. Aligns RULES Self-Supervision.
+Use `convergence-delivery.md` decision semantics. A new tool output or Evidence ID does **not** count as progress by itself.
+
+3 consecutive analysis actions with no `decision_delta`, or 2 stage switches with no `decision_delta`, MUST trigger replan under the existing **feasibility gate**. `decision_delta` means a hypothesis/Finding/Path/coverage/scope/blocker state materially changed.
 
 ### R44 — Single-source high confidence
 
@@ -99,7 +101,7 @@ Effort band + A-T pointers -> `E-anti-adversarial` (**no** A-T table copy).
 |----|---------|
 | R5 | content_hash; evidence-finding-path + review_case --verify-hashes |
 | R12 | parallel hypotheses via R2 (no heavy case-branch product) |
-| R22 | docs-generator executive summary MUST |
+| R22 | docs-generator executive summary MUST for formal reports |
 | R23 | IOC dual-channel **only** explicit_malware / user IOC; forbidden default ordinary RE |
 | R28 | authorized lab; no full weaponized exploit chain in-repo |
 | R34 | SHOULD journal stale note; **no** 90-day auto engine |
@@ -131,7 +133,7 @@ Effort band + A-T pointers -> `E-anti-adversarial` (**no** A-T table copy).
 | R25-R26 | skill-supply-chain, bootstrap pin (#76) |
 | R27/R29 | scope-contract, RULES security |
 | R32-R33 | MASTER-ROUTING, role-map |
-| R35 | field-journal |
+| R35 | field-journal + convergence-delivery conditional learning |
 | A-T PE anti-analysis | anti-analysis.md |
 | U-AV non-PE | nonpe-format-cookbook.md |
 
@@ -142,7 +144,7 @@ Effort band + A-T pointers -> `E-anti-adversarial` (**no** A-T table copy).
 1. R41 grounded claims
 2. R4* validated bar
 3. R1 low confidence -> dynamic
-4. R43 deadlock -> replan under feasibility gate
+4. R43 no decision_delta -> replan under feasibility gate
 5. R8/R23 no default malice/IOC
 
 ---
