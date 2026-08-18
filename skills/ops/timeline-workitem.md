@@ -10,9 +10,9 @@ work/<case>/
   scope.md           # 契约（ops/scope-contract.md）
   timeline.md        # 追加写，禁止改历史条目
   workitems.md       # 工作项与覆盖
-  evidence/          # 原始产物（截图、pcap、日志）
-  notes/
-  report/            # 最终报告草稿或拷贝
+  evidence/          # promoted Evidence records + referenced case-local artifacts
+  notes/             # raw notes / transient analysis context
+  report/            # formal/staged reports when the delivery profile needs them
 ```
 
 初始化：
@@ -31,7 +31,7 @@ powershell -File skills\scripts\case-init.ps1 -Hint "full pentest" -CaseName "ac
 - command_or_ref:
 - result_summary:
 - artifacts: []      # relative paths under this case
-- evidence_ids: []   # E-xxx when promoted
+- evidence_ids: []   # E-xxx only when an observation was promoted
 - next:
 ```
 
@@ -50,22 +50,26 @@ powershell -File skills\scripts\case-init.ps1 -Hint "full pentest" -CaseName "ac
 status: pending | in_progress | blocked | done | cancelled
 
 ## Coverage
-- [ ] Recon complete for in_scope assets
-- [ ] Critical/High candidates triaged
+- [ ] Requested in_scope coverage is complete or residual scope is explicit
+- [ ] Critical/High candidates triaged when applicable
 - [ ] Validated findings have Evidence
-- [ ] Path documented (attack/call/solve)
-- [ ] Timeline continuous (no silent gaps >1 major phase)
-- [ ] Report exported via docs-generator
-- [ ] field-journal written (anonymized)
+- [ ] Material Path documented when the task has an attack/call/solve path
+- [ ] Timeline has no unexplained major-phase gap for case/formal work
+- [ ] Formal report exported via docs-generator — only when delivery profile is `formal` or the user requested it
+- [ ] field-journal written — only when reusable new knowledge qualifies under convergence-delivery.md
 ```
+
+Coverage checkboxes are profile-aware. An `inline` task does not need a case timeline/workitems package; a `case` task does not fail merely because no formal report or journal mutation was needed.
 
 ## attack-chain / pentest 挂钩
 
 | Skill | MUST |
 |-------|------|
-| `attack-chain/` | 多阶段任务创建 case 目录；每阶段结束更新 workitems + timeline |
-| `pentest-tools/` | 每次工具跑批后至少 1 条 timeline；发现 → Evidence 草稿 |
-| 其它 RE skill | 建议 timeline；至少在出报告前补齐 Evidence 链 |
+| `attack-chain/` | 多阶段 case/formal 任务创建 case 目录；每阶段结束更新 workitems + timeline |
+| `pentest-tools/` | 每次工具跑批后至少 1 条 timeline；原始批次输出保留为 artifact，只有 decision-relevant observation 才 promotion 成 Evidence |
+| 其它 RE skill | case/formal profile 建议 timeline；正式出报告前补齐需要进入 handoff 的 Evidence 链 |
+
+Raw→Evidence promotion 与 delivery profile 见 `convergence-delivery.md`。
 
 ## 特色
 
