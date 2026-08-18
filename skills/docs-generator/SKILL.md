@@ -2,7 +2,7 @@
 name: docs-generator
 description: |
   Creates task-oriented technical documentation with progressive disclosure. Use when writing READMEs, API docs, architecture docs, or markdown documentation.
-  Also use this skill at the END of any completed reverse engineering, penetration testing, CTF, or security analysis task to generate a formal report in the user's project directory.
+  For reverse engineering, penetration testing, CTF, or security analysis, use this skill when the user requests a formal report/writeup or the active delivery profile requires a formal handoff/archive.
   Trigger keywords: 写报告, 写文档, 出报告, writeup, 技术文档, report, documentation.
 ---
 
@@ -19,14 +19,15 @@ For writing style, tone, and voice guidance, use `Skill(ce:writer)` with **The E
 
 ## 安全/逆向任务文档输出
 
-当逆向/渗透/CTF/安全分析任务完成后，本 skill 负责在**用户项目目录**生成正式技术文档。
+当安全/逆向任务需要正式交付时，本 skill 负责在**用户项目目录**生成正式技术文档。是否需要正式报告由 `../ops/convergence-delivery.md` 的 delivery profile 决定；不要仅因为技术 objective 已完成就自动升级成 formal report。
 
 ### 触发时机
 
-1. 逆向任务完成，已产出核心结论（算法还原、签名破解、绕过方案等）
-2. 渗透测试完成，已发现并验证漏洞
-3. CTF 题目解出，已拿到 flag
-4. 用户明确要求"写一份报告/文档/writeup"
+1. 用户明确要求"写一份报告/文档/writeup"；
+2. active delivery profile 为 `formal`，需要正式 handoff/archive；
+3. case profile 中，用户或下游 handoff 明确需要阶段性正式文档。
+
+`inline` profile 默认不调用本 skill；普通 `case` profile 也不因“任务完成”而自动生成正式报告。
 
 ### 模板选择
 
@@ -74,7 +75,7 @@ For writing style, tone, and voice guidance, use `Skill(ce:writer)` with **The E
 
 ### 图表集成
 
-生成报告时，应在适当位置调用 `diagram-generator` skill 生成可视化图表：
+生成报告时，**仅当图表能明显提升结构/流程可读性，或用户明确要求时**调用 `diagram-generator`。不要为了满足固定 checklist 强制制造图表。
 
 | 报告类型 | 建议图表 | 图表类型 |
 |---------|---------|---------|
@@ -164,18 +165,19 @@ For README, API endpoint, and file organization templates, see [references/templ
 
 ## 路由上下文
 
-**上游入口**: 所有安全/逆向 skill 在任务完成后自动调用本 skill
+**上游入口**: 用户明确文档请求，或 `formal` delivery profile / 明确 handoff 需要正式报告
 **触发方式**:
-- 自动：任务完成后作为行为链第 9 步执行
+- profile：`../ops/convergence-delivery.md` 判定为 `formal`
 - 手动：用户说"写报告"、"出文档"、"writeup"
+- case：下游 handoff 明确需要阶段性正式文档
 
 **同级关联模块**:
-- `apk-reverse/` — APK 逆向完成后生成逆向报告
-- `ida-reverse/` — 二进制分析完成后生成逆向报告
-- `radare2/` — CLI 分析完成后生成逆向报告
-- `js-reverse/` — JS 签名逆向完成后生成签名报告
-- `reverse-engineering/` — 通用逆向完成后生成逆向报告
-- `field-journal/` — 报告内容同时作为进化日志的数据来源
+- `apk-reverse/` — 需要正式交付时生成 APK 逆向报告
+- `ida-reverse/` — 需要正式交付时生成二进制分析报告
+- `radare2/` — 需要正式交付时生成 CLI 分析报告
+- `js-reverse/` — 需要正式交付时生成签名逆向报告
+- `reverse-engineering/` — 需要正式交付时生成通用逆向报告
+- `field-journal/` — 仅在产生可复用新知识时作为经验沉淀来源
 
 **安全报告模板**: `references/security-report-templates.md`
 **厂商报告规则**: `references/vendor-report-rules.md`（flavor: malware | apt | null；optional overlay: vuln）
@@ -184,8 +186,10 @@ For README, API endpoint, and file organization templates, see [references/templ
 
 ## 任务完成自检（声称完成前 MUST 通过）
 
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
+- [ ] 当前任务是否确实需要 formal/document delivery，而不是被自动升级？
+- [ ] 我是否执行了本 skill 工作流中的每一步（而不是只阅读）？
 - [ ] 我是否基于 `tool-index` 使用了真实工具路径？
 - [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
 - [ ] 报告是否含 Evidence / Finding / Path（ops 契约）？
-- [ ] 是否完成并回写了 RULES 要求的 Checklist 项？
+- [ ] 图表是否因为有信息价值/用户要求才生成，而不是固定 checklist？
+- [ ] 是否只完成了 active delivery profile 真正要求的后续工作？
