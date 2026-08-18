@@ -6,12 +6,16 @@ Z3r0 启发、**本包形态**实现：
 |------|------|
 | [IDENTITY.md](IDENTITY.md) | 我们是谁 / 不做平台 |
 | [scope-contract.md](scope-contract.md) | 启动 scope + network_profile |
-| [evidence-finding-path.md](evidence-finding-path.md) | 证据链 |
+| [evidence-finding-path.md](evidence-finding-path.md) | 证据链 + Raw→Evidence promotion |
+| [convergence-delivery.md](convergence-delivery.md) | decision_delta 收敛 + inline/case/formal 交付深度 |
+| [analysis-decision-framework.md](analysis-decision-framework.md) | 假设驱动、Finding 充分性、R43 replan |
 | [role-map.md](role-map.md) | 角色→skill + 交接 |
 | [timeline-workitem.md](timeline-workitem.md) | 时间线与覆盖 |
 | [sandbox-profile.md](sandbox-profile.md) | 工具对照 |
 | [skill-supply-chain.md](skill-supply-chain.md) | Agent Skill/MCP 供应链安全（AST10 精简） |
-| [case-review/](../case-review/) | Evidence 图完整性审查与报告交接 |
+| [case-review/](../case-review/) | Evidence 图完整性审查与正式报告交接 |
+
+`convergence-delivery.md` 只控制停止判定、Evidence promotion 与交付义务；它**不**取代 routing、scope、case state、RE workflow 或 case-review。
 
 相关 references（非孤儿，从本 hub / MASTER / SKILL 可达）：
 
