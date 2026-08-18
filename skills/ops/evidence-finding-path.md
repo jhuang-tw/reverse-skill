@@ -25,6 +25,14 @@
 
 **MUST**：Finding 引用的 Evidence 至少 1 条；`repro_command` 第三方可跑或标明离线限制。
 
+### Raw artifact → Evidence promotion
+
+Tool stdout, traces, screenshots, dumps, packet captures, decompiler exports, and logs are **raw artifacts by default**, not automatically one Evidence ID per low-level observation.
+
+Promote an observation to Evidence when it materially supports or changes a hypothesis, Finding, Path, coverage decision, scope decision, or blocker resolution. Related low-level observations MAY be consolidated into one Evidence record when they establish one decision-relevant fact, while preserving the artifact path/hash or reproducible command.
+
+Do **not** create one Evidence item per function call, address, packet, log line, or retry merely because the observation exists. Full convergence semantics are in `convergence-delivery.md`.
+
 **CLI helper**（写入 `work/<case>/evidence/E-*.md`）：
 
 ```powershell
@@ -32,13 +40,13 @@ powershell -File skills/scripts/append-evidence.ps1 -CaseRoot work/<case> `
   -Id E-001 -Title "..." -ReproCommand "..." -Severity info -Status observed
 ```
 
-When the evidence is a case-local file, pass `-ArtifactPath` to record a SHA-256 fixity value and a relative artifact path. Review the complete case graph before handoff:
+When the evidence is a case-local file, pass `-ArtifactPath` to record a SHA-256 fixity value and a relative artifact path. Review the complete case graph before a formal handoff/archive:
 
 ```bash
 python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --strict
 ```
 
-The review is read-only and checks scope fields, Evidence records, work item and timeline references, structured Findings, Paths, and artifact hash matches.
+The review is read-only and checks scope fields, Evidence records, work item and timeline references, structured Findings, Paths, and artifact hash matches. Routine case checkpoints MAY use non-strict review; strict mode is the formal handoff/archive gate.
 
 ## 2. Finding（安全/逆向结论）
 
@@ -87,7 +95,7 @@ The review is read-only and checks scope fields, Evidence records, work item and
 
 ## 4. 报告中的位置
 
-`docs-generator` 安全报告 **MUST** 含：
+When `docs-generator` produces a **formal security report**, it **MUST** contain:
 
 1. Scope 摘要（链到 case `scope.md`）  
 2. Evidence 表或章节  
@@ -95,17 +103,17 @@ The review is read-only and checks scope fields, Evidence records, work item and
 4. 至少 1 条 Path（攻击/调用/解题）  
 5. Timeline 摘要（可选全文链到 `timeline.md`）
 
-详见 `docs-generator/references/security-report-templates.md` 中 **Evidence Chain** 节。
+Formal-report triggering and lighter delivery profiles are defined in `convergence-delivery.md`. 详见 `docs-generator/references/security-report-templates.md` 中 **Evidence Chain** 节。
 
 ## 5. field-journal 挂钩
 
-回写 journal 时 **SHOULD** 摘录：
+When a task produced reusable new knowledge and therefore qualifies for a journal write under `convergence-delivery.md`, journal content **SHOULD** 摘录：
 
 - 3 条内关键 Evidence id + 命令  
 - 1 条核心 Finding  
 - 可复用 Path 模式一句话  
 
-完整敏感内容只在用户项目报告中；journal **MUST** 脱敏（`anonymization.md`）。
+完整敏感内容只在用户项目报告中；journal **MUST** 脱敏（`anonymization.md`）。Normal reuse of an existing method does not require a journal mutation.
 
 ## 6. 与 Z3r0 的差异（特色）
 
@@ -128,4 +136,4 @@ Promotion to status=validated is stricter (decision cookbook):
 | **validated** | **SHOULD >=2 independent** Evidence (best: 1 static + 1 dynamic). A single Evidence item alone MUST NOT silently promote to validated — keep candidate/preliminary, or record residual_risk + human confirm. |
 | blocked promotion | record Evidence E-insufficient-evidence |
 
-Full recipes: [nalysis-decision-framework.md](analysis-decision-framework.md) (R4*, R1, R41, R44).
+Full recipes: [analysis-decision-framework.md](analysis-decision-framework.md) (R4*, R1, R41, R44).
