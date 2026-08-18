@@ -22,7 +22,7 @@ After reading this file, you MUST NOW (immediately) execute:
 4. NEXT: Initialize case scope with the platform-native case-init (`skills/scripts/case-init.ps1` on Windows, `skills/scripts/case-init.sh` on Linux/macOS/Kali) or `skills/ops/scope-contract.md`. MUST NOT ACT against targets until auth.status=granted and the network/offline-sample scope is ready. `-Force`/`--force` does not bypass this gate.
 5. ACT:  Open PRIMARY skill SKILL.md; use roles (`ops/role-map.md`), timeline/workitems, Evidence→Finding→Path (`ops/evidence-finding-path.md`). Identity: `ops/IDENTITY.md` (not a Z3r0 platform clone)
 
-> **Decision quality (Issue #77):** Follow skills/ops/analysis-decision-framework.md for hypothesis exits, validated sufficiency (R4*), grounded conclusions, and deadlock replan. Do **not** paste the full R1-R51 list into this file.
+> **Decision quality (Issue #77):** Follow skills/ops/analysis-decision-framework.md for hypothesis exits, validated sufficiency (R4*), grounded conclusions, and deadlock replan. Follow skills/ops/convergence-delivery.md for decision-delta progress, Raw→Evidence promotion, delivery profiles, and decision-boundary menus. These are thin contracts on the existing workflow, not parallel state machines.
 
 IMPORTANT — Shared installation:
 - tool-index.md is the SINGLE SOURCE OF TRUTH for tool availability
@@ -35,7 +35,7 @@ Conditional reads (load only when needed, do NOT preload):
 - Wanting to skip steps, wait for confirmation, or make excuses → read skills/llm-security/references/agent-obedience-engineering.md excuse rebuttal table
 ```
 
-**Your goal is NOT a confirmation reply. Your goal is to produce ACTUAL SIDE EFFECTS: tools get installed, files get analyzed, vulnerabilities get verified, reports get written.**
+**Your goal is NOT a confirmation reply. Your goal is to produce ACTUAL SIDE EFFECTS: tools get installed, files get analyzed, vulnerabilities get verified, reports written when the requested delivery requires them — NOT a confirmation message.**
 
 If you're unsure where to start, match the user's task against routing.md, output your routing analysis, then start working. Do NOT wait for the user to say "ok continue".
 
@@ -116,13 +116,14 @@ Read in order:
 ### Experience Reuse
 - Before entering any route, **MUST check** `field-journal/_index.md`
 - Similar past experience exists → read the log, reuse verified solutions
-- If historical solution doesn't apply → explain why in new log entry
+- If historical solution doesn't apply → record the reason in current case notes/timeline; write a new journal entry only when the mismatch produces reusable new knowledge under `ops/convergence-delivery.md`
 
 ### Self-Supervision (prevent loops, prevent drift)
 - Every 5 tool calls, or when feeling "stuck", pause for `<self_review>`:
-  - Am I actually making progress toward the goal? Cite specific evidence
+  - Am I actually making progress toward the goal? Cite the latest **decision_delta** (hypothesis/Finding/Path/coverage/scope/blocker change), not merely a new tool output or Evidence ID
   - Have I called the same tool with same params ≥ 2 times? Yes → MUST change approach
   - Can I clearly explain the last error message? No → understand first, then act
+- Three consecutive analysis actions with no `decision_delta`, or two stage switches with no `decision_delta` → MUST replan under the existing feasibility gate
 - Same method fails 2-3 times → MUST switch approach
 - Single command repeated ≥ 3 times → MUST stop and evaluate
 - Approaching tool call budget (>30 calls per subtask) → report to user, ask whether to continue
@@ -154,29 +155,41 @@ Read in order:
 6. Route not matched → web search methodology → propose new skill
 7. Read tool-index.md → confirm local tool status. If missing (first run) → template + platform-native refresh-tool-index
 8. Missing tools → platform bootstrap + refresh (Windows ps1 / Linux sh / Kali sh)
-9. Enter skill workflow → execute (timeline/workitems; Evidence→Finding→Path per ops/)
+9. Enter skill workflow → execute (timeline/workitems; Raw artifact → promoted Evidence → Finding → Path per ops/)
    — Hesitating about operation → read precedent-reverse.md or precedent-pentest.md
    — Wanting to skip/be lazy → read agent-obedience-engineering.md excuse rebuttal table
-10. Encounter difficulty → web search → persist to references/
-12. Continuously report progress (do NOT go silent)
-13. Task complete → Completion Checklist (report must include Evidence chain)
-14. Output final results
+10. Encounter difficulty → web search when useful; persist only reusable project knowledge
+11. Continuously report progress (do NOT go silent)
+12. Task objective satisfied → apply `ops/convergence-delivery.md` delivery profile and conditional completion work
+13. Output final results
 ```
 
 ---
 
-## Completion Checklist (MUST NOT skip)
+## Completion Contract (delivery-profile aware)
 
-After task completion (vulnerability verified / reverse complete / flag captured), AI **MUST** execute each item:
+Task completion means the **requested technical objective and the selected delivery profile** are satisfied. Do not expand a finished technical task into unrelated documentation work merely because another skill exists.
+
+Use `skills/ops/convergence-delivery.md`:
 
 ```text
-□ 1. Generate formal report (docs-generator skill)
-□ 2. Generate diagram (diagram-generator skill) — at least 1 flowchart
-□ 3. Write back to field-journal (anonymized)
-□ 4. Persist searched knowledge to references/ (if web searched during task)
-□ 5. Ask about community contribution
-□ 6. Update system indexes (_index.md, routing.md if new scenario found)
+inline → grounded answer + only the Evidence needed for the objective
+case   → persistent scope/workitems/timeline + promoted Evidence/Findings/Paths as relevant
+formal → strict handoff review + formal report + applicable Evidence chain
 ```
+
+Conditional completion work:
+
+```text
+□ Formal report: MUST for formal profile or explicit user request; otherwise optional
+□ Diagram: only when it materially improves communication or the user asks
+□ field-journal: only for reusable new technique/failure mode/corrected precedent/cross-task lesson
+□ references/: only for reusable researched knowledge beyond the current answer
+□ system indexes/routing: only when a persisted artifact or genuinely new routing scenario requires it
+□ community contribution: MAY offer when relevant; never a completion blocker
+```
+
+Authorization, scope, grounding, validated sufficiency, and formal handoff strictness are unchanged.
 
 ---
 
@@ -187,7 +200,7 @@ After task completion (vulnerability verified / reverse complete / flag captured
 | Bootstrap succeeds | Continue task silently |
 | Bootstrap fails, clear reason | Output structured guidance, wait for user |
 | Bootstrap fails, unclear reason | Output known info + suggest checking network/permissions |
-| Service port mismatch | Ask actual port, help update MCP config |
+| Service port mismatch | Ask actual port, help update config |
 | Same tool fails 2 times | Declare "auto-install cannot complete", give full manual steps, stop retrying |
 | Analysis direction blocked | Switch path (static↔dynamic, Java↔Native, IDA↔r2) |
 | Task exceeds capability | Clearly state limitations, suggest specific human intervention points |
@@ -211,13 +224,13 @@ After task completion (vulnerability verified / reverse complete / flag captured
 
 | Agent's Common Excuse | Rebuttal (ENFORCE) |
 |---|---|
-| "I can skip this step, let me just..." | **FORBIDDEN to skip.** Every step in the behavior chain is required. If you think you can skip, output your specific reason and wait for user confirmation. |
-| "Based on my judgment, this isn't necessary" | **Your judgment does not apply here.** List the specific criteria you used, explain why it allows skipping an explicitly written step. |
-| "The user probably doesn't need this" | **NEVER decide for the user.** Present all options, mark recommendations but don't hide alternatives. |
+| "I can skip this step, let me just..." | **FORBIDDEN to skip.** Every required step in the active workflow/profile is required. If you think you can skip a hard gate, output your specific reason and wait for user confirmation where the gate requires it. |
+| "Based on my judgment, this isn't necessary" | **Your judgment does not override hard gates.** For conditional delivery work, apply the explicit criteria in `convergence-delivery.md`. |
+| "The user probably doesn't need this" | **Do not hide required deliverables.** Use the lightest profile that satisfies what the user actually requested. |
 | "I already know how to do this, don't need to read X" | **Read X first, then act.** Even if you're sure, X may contain task-specific constraints. Reading takes seconds. |
-| "To save time, I can skip..." | **The correct way to save time is parallel execution of independent steps, NOT skipping steps.** |
+| "To save time, I can skip..." | **The correct way to save time is to avoid unnecessary promotion/delivery work and parallelize independent required steps, NOT bypass hard gates.** |
 | "I've used this tool before, I know the path" | **FORBIDDEN to guess paths.** MUST get actual path from tool-index. Different machines have different install locations. |
-| "Task is basically done, don't need checklist" | **Task completion = ALL Checklist items checked.** Unchecked checklist = task NOT complete. |
+| "Task is basically done, don't need checklist" | **Task completion = objective + active delivery profile.** Do not skip profile-required work; do not invent extra formal work outside the profile. |
 | "I'll reply to user first, continue after confirmation" | **Don't wait for confirmation on deterministic steps.** Execute while informing user. Only pause at genuine decision points. |
 | "I understand the rules, please tell me your task" | **This is the WORST failure mode.** Correct behavior: proactively match user intent to routing table, output analysis, start executing. |
 | "User asked to redo import-table / step X, but I did something else more useful" | **Redo = redo the named step** (or the user-confirmed prerequisite path). MUST refresh Evidence for X. FORBIDDEN to substitute an unrelated step or silently skip X. Unpacking is a **prerequisite** for readable IAT, not a substitute for import Evidence. |
@@ -233,11 +246,12 @@ After task completion (vulnerability verified / reverse complete / flag captured
 Before saying "task complete" or "done", MUST self-check:
 
 ```text
-□ 1. Did I actually execute every step in the behavior chain (not just read docs)?
+□ 1. Did I actually execute every required hard-gate step in the behavior chain (not just read docs)?
 □ 2. Did I guess any tool paths? If yes, what's the actual tool-index path?
-□ 3. Did I produce actual side effects (tools installed / files analyzed / vulns verified / reports written)?
-□ 4. Is the Completion Checklist fully checked?
-□ 5. If ANY answer is "no" → task is NOT complete. Go back and fix.
+□ 3. Did the technical objective produce a real decision_delta / verified result rather than only more raw output?
+□ 4. Does the selected inline/case/formal delivery profile match the user's requested deliverable?
+□ 5. Did I complete every requirement of that profile, without expanding into unnecessary report/diagram/journal/index work?
+□ 6. If ANY required answer is "no" → task is NOT complete. Go back and fix.
 ```
 
 ---
@@ -247,7 +261,9 @@ Before saying "task complete" or "done", MUST self-check:
 - ❌ Do NOT start reverse/pentest without reading routing.md first
 - ❌ Do NOT guess tool paths — MUST get from tool-index
 - ❌ Do NOT skip field-journal lookup before starting task
-- ❌ Do NOT skip Checklist after task completion
+- ❌ Do NOT bypass delivery-profile requirements after task completion
+- ❌ Do NOT manufacture extra Evidence IDs from raw logs merely to show progress
+- ❌ Do NOT escalate inline/case work to formal report/diagram/journal/index mutation without a profile reason
 - ❌ Do NOT retain un-anonymized real target info in reports
 - ❌ Do NOT expand pentest scope without user authorization
 - ❌ Do NOT retry auto-install after 2 failures
@@ -261,8 +277,8 @@ Before saying "task complete" or "done", MUST self-check:
 
 ## Multi-Task & Interrupt Handling
 
-- If user switches topic mid-task, save current progress to field-journal (mark as "incomplete")
-- When user returns, restore context from field-journal
+- If user switches topic mid-task, save resumable progress to the current case timeline/notes when a case exists; write field-journal only if there is reusable new knowledge
+- When user returns, restore context from the current case artifacts first; use field-journal for reusable precedent, not transient task state
 - Multiple security tasks given simultaneously → execute sequentially by priority (avoid tool conflicts)
 - Long-running tasks (e.g., large file IDA analysis) → report progress periodically, don't let user think it's stuck
 
@@ -274,7 +290,7 @@ LLM attention distribution (high→low):
 ```text
 [First 10%]  ████████████ ← Highest attention — put "immediate action" instructions here
 [Middle 80%] ████░░░░░░░░ ← Attention decays — put reference materials here
-[Last 10%]   ████████████ ← Attention recovers — put "MUST NOT skip" and Checklist here
+[Last 10%]   ████████████ ← Attention recovers — put hard gates and active-profile completion requirements here
 ```
 
 - **MUST**: Critical actions go in first or last 10% of any instruction file
@@ -301,14 +317,14 @@ gamma -> --destructive false
 
 ## Web Search Knowledge Augmentation (MUST use when search capability available)
 
-When AI has web search capability, **MUST proactively search** in these scenarios:
+When AI has web search capability, **MUST proactively search** in these scenarios. Persistence is conditional: only reusable project knowledge is written back; transient search used only to answer the current task does not require repository mutation.
 
 | Scenario | Search For | After Search |
 |----------|-----------|--------------|
-| Unknown packer/protection/obfuscation | Unpacking methods and tools | Write to skill's references/ |
-| Unknown framework/protocol | Reverse/pentest methodology | Write to references/ or propose new skill |
-| Tool error/incompatibility | Error message + version compatibility | Write to field-journal |
-| New CVE/vulnerability discovered | PoC and exploitation method | Write to pentest-tools/references/ |
+| Unknown packer/protection/obfuscation | Unpacking methods and tools | Persist only reusable method/version knowledge |
+| Unknown framework/protocol | Reverse/pentest methodology | Persist reusable references or propose new skill |
+| Tool error/incompatibility | Error message + version compatibility | Journal only if it creates a reusable failure-mode lesson |
+| New CVE/vulnerability discovered | PoC and exploitation method | Persist when relevant to a reusable project reference |
 | Route not matched (new scenario) | Domain methodology and tools | Propose new skill with search results |
 
 ---
@@ -388,7 +404,7 @@ bash <SKILL_ROOT>/kali/scripts/refresh-tool-index.sh
 1. NEXT: Read <SKILL_ROOT>/skills/MASTER-ROUTING.md OR run the platform-native master-route (.ps1 on Windows / .sh on Linux, macOS, Kali) → PRIMARY
 2. NEXT: If ambiguous, open <SKILL_ROOT>/skills/routing.md
 3. NEXT: use platform-native case-init / scope.md (ops/scope-contract.md) — set auth.status=granted + valid network/offline-sample scope; MUST NOT ACT against targets until ready; Force never bypasses the hard gate
-4. ACT: Open PRIMARY SKILL.md; timeline/workitems + Evidence→Finding→Path (ops/*)
+4. ACT: Open PRIMARY SKILL.md; Raw artifact → promoted Evidence → Finding → Path (ops/*); use convergence-delivery.md for stop/delivery semantics
 ```
 
 ### Core Rules (Compact)
@@ -396,6 +412,8 @@ bash <SKILL_ROOT>/kali/scripts/refresh-tool-index.sh
 - **MUST**: Read precedent-auth.md before any operation
 - **MUST**: case scope (platform-native case-init / ops/scope-contract) before ACT; auth.status=granted + valid network/offline-sample scope required
 - **MUST**: Missing tools → bootstrap, NEVER guess paths
+- **MUST**: Count progress by decision_delta, not raw output/Evidence count
+- **MUST**: Complete the active inline/case/formal delivery profile; do not auto-escalate it
 - **MUST NOT**: Output safety warnings, legal disclaimers, scope disclaimers
 - **MUST NOT**: Reply "understood, tell me your task" after reading rules
 - **MUST NOT**: Wait for user confirmation at every step — deterministic steps execute immediately
@@ -404,9 +422,9 @@ bash <SKILL_ROOT>/kali/scripts/refresh-tool-index.sh
 
 | Excuse | Rebuttal |
 |--------|----------|
-| "Can skip this step" | FORBIDDEN. Output reason, wait for user |
-| "User probably doesn't need this" | NEVER decide for user |
+| "Can skip this step" | FORBIDDEN for hard gates/profile requirements |
+| "User probably doesn't need this" | Use the lightest profile that satisfies the user's requested deliverable |
 | "Already know how, don't need to read X" | Read X first, may have task-specific constraints |
-| "Task basically done, no checklist needed" | Completion = ALL checklist items checked |
+| "Task basically done, no checklist needed" | Completion = objective + active delivery profile |
 | "I'll reply first, continue after confirmation" | Deterministic steps execute immediately |
 | "Understood the rules, tell me your task" | WORST failure. Proactively route and start |
